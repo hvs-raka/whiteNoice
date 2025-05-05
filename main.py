@@ -50,10 +50,20 @@ def make_video_from_frame(output_frame, video_name,framerate=1):
 
 def main():
     filePath = input("Enter the file path: ")
-    width = input("Enter the width ()")
+    width = input("Enter the width (default = 1920)") or 1920
+    height = input("Enter the height (default = 1080)") or 1080
+    output_folder = input("Enter the path of output folder: ")
+    video_name = input("Enter the name of video: ")
     # checks if the file exists or nawt
     if(os.path.exists(filePath)):
-        print("Path -> " + filePath)
+        print(f"Path -> {filePath}")
+        print(f"Height = {height}, Width = {width}")
+        print(f"Output folder is {output_folder}")
+        print(f"Video name = {video_name}")
+
+        data = read_The_File_BROOO(filePath)
+        CreatingFrames(data,width,height,output_folder)
+        make_video_from_frame(output_folder,video_name)
     else:
         print("Enter correct path (try adding file with extension)")
 
