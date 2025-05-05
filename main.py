@@ -18,14 +18,34 @@ def CreatingFrames(data,width,height,output_frames):
     for byte in data:
         bits.extend(bytesToBits(byte)) # for every byte converted append bits into bits list
     bitsPerFrame = height * width
-    numOfFrames = (len(bits) + bitsPerFrame -1) // bitsPerFrame
+    num_frames = (len(bits) + bitsPerFrame -1) // bitsPerFrame
 
     os.makedirs(output_frames, exist_ok= True) # dir to store all PNGs ('exit_ok' so that it don't crash with existing folder)
     bit_index = 0
+    # creating a blank grey scale image
+    for frame_num in range(num_frames):
+        frame = np.zeros((height,width), dtype=np.uint8) # here all pixels are set to 0 initially
 
+        # here storing all bits into black or white
+        for y in range(height):
+            for x in range(width):
+                if bit_index >= len(bits):  # checks if already encoded bits or not
+                    break
+                # if bit = 1 then 255 (white), else 0 
+                frame[y,x] = 255 if bits[bit_index] else 0
+                bit_index += 1
+        # saving all those frames into 'output_frames' folder
+        filename = os.path.join(output_frames,f"frame{frame_num:04d}.png")
+        cv2.imwrite(filename,frame)
 
-    # exhausted sleeping ...ZZZZZZ..ZZZZ
-
+def make_video_from_frame(output_frame, video_name,framerate=1):
+    # using FFmpeg 
+    os.system(
+        # calling ffmpeg via os.systems
+        f"ffmpeg -framerate {framerate} -i {output_frame}/frame%04d.png"
+        # libx264 use H.264 codec for video compression, pix_fmt is formatting pixels
+        f"-c:v libx264 -pix_fmt yuv420p {video_name}"
+    )
 
 
 def main():
