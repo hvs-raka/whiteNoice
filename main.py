@@ -1,12 +1,31 @@
 import os
 import cv2
 import numpy as np
+import subprocess
 
+
+
+
+def printHeader():
+    print("This is WhiteNoice (Data to video encoding)")
+    print("Developed my me^ ^")
+
+
+
+# function for encoding data
+def encodingData(filePath,height,width,output_folder,video_name):
+    data = read_The_File_BROOO(filePath)
+    CreatingFrames(data,width,height,output_folder)
+    make_video_from_frame(output_folder,video_name)
 
 def read_The_File_BROOO(filePath):
     # opens file in 'rb' mode means reading file in raw binary
     with open(filePath, 'rb') as f:
         return f.read() # after reading byte-by-byte returning all bytes
+    
+
+# encrypting file bytes
+
 
 def bytesToBits(byte):
     return[(byte >> i) & 1 for i in reversed(range(8))] # converting bytes to bits
@@ -38,34 +57,51 @@ def CreatingFrames(data,width,height,output_frames):
         filename = os.path.join(output_frames,f"frame{frame_num:04d}.png")
         cv2.imwrite(filename,frame)
 
-def make_video_from_frame(output_frame, video_name,framerate=1):
+def make_video_from_frame(output_frame, video_name,framerate=30):
     # using FFmpeg 
-    os.system(
-        # calling ffmpeg via os.systems
-        f"ffmpeg -framerate {framerate} -i {output_frame}/frame%04d.png"
-        # libx264 use H.264 codec for video compression, pix_fmt is formatting pixels
-        f"-c:v libx264 -pix_fmt yuv420p {video_name}"
-    )
+    command = [
+        "ffmpeg",
+        "-framerate", str(framerate),
+        "-i", f"{output_frame}/frame%04d.png",
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        video_name
+    ]
+    result = subprocess.run(command)
+
 
 
 def main():
-    filePath = input("Enter the file path: ")
-    width = input("Enter the width (default = 1920)") or 1920
-    height = input("Enter the height (default = 1080)") or 1080
-    output_folder = input("Enter the path of output folder: ")
-    video_name = input("Enter the name of video: ")
-    # checks if the file exists or nawt
-    if(os.path.exists(filePath)):
-        print(f"Path -> {filePath}")
-        print(f"Height = {height}, Width = {width}")
-        print(f"Output folder is {output_folder}")
-        print(f"Video name = {video_name}")
 
-        data = read_The_File_BROOO(filePath)
-        CreatingFrames(data,width,height,output_folder)
-        make_video_from_frame(output_folder,video_name)
+
+    printHeader()
+
+    firstInput = int(input("Press 1 to start Encoding, 2 for Decoding: "))
+
+    if firstInput==1:
+        filePath = input("Enter the file path: ")
+        width = input("Enter the width (default = 1920)") or 1920
+        height = input("Enter the height (default = 1080)") or 1080
+        output_folder = input("Enter the path of output folder: ")
+        video_name = input("Enter the name of video(with format ex - .mp4): ")
+
+        
+        # checks if the file exists or nawt
+        if(os.path.exists(filePath)):
+            print(f"Path -> {filePath}")
+            print(f"Height = {height}, Width = {width}")
+            print(f"Output folder is {output_folder}")
+            print(f"Video name = {video_name}")
+
+            encodingData(filePath,height,width,output_folder,video_name)
+
+        else:
+            print("Enter correct path (try adding file with extension)")
+
+    elif firstInput == 2:
+        print("decoding:")
     else:
-        print("Enter correct path (try adding file with extension)")
+        print("Wrong input exiting.")
 
 if __name__ == "__main__":
     main()
