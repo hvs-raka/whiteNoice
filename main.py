@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 import subprocess
+from PIL import Image # light weight image processing tool
 
 
 
@@ -70,10 +71,49 @@ def make_video_from_frame(output_frame, video_name,framerate=30):
     result = subprocess.run(command)
 
 
+# decoding video back to original data 
+
+def frameExtraction(video_file, output_folder):
+    subprocess.run([
+        "ffmpeg",
+        "-i", video_file,
+        f"{output_folder}/frame%04d.png"
+    ])
+
+def ReadingBits(frame_folder,width,height):
+    bits = []
+
+    for i in sorted(os.listdir(frame_folder)):
+        if i.endswith('.png'):
+            path = os.path.join(frame_folder,i)
+            img = Image.open(path).convert('1') # convert to B&W
+
+            for y in range(height):
+                for x in range(width):
+                    pixel = img.getpixel((x,y))
+                    bits.append('0' if pixel == 0 else '1')
+    
+    return bits
+
+def bits_to_file(bits, output_file):
+    # remove extra bits if not multiple of 8
+    extra_bits = len(bits) % 8
+    if extra_bits:
+        bits = bits[:-extra_bits]
+    byte_data = bytearray()
+    for i in range(0, len(bits),8):
+        byte = bits[i:i+8]
+        byte_str = ''.join(byte)
+        byte_data.append(int(byte_str,2))
+    
+    with open(output_file,'wb') as f:
+        f.write(byte_data)
+
+
+
+# main function 
 
 def main():
-
-
     printHeader()
 
     firstInput = int(input("Press 1 to start Encoding, 2 for Decoding: "))
@@ -99,7 +139,20 @@ def main():
             print("Enter correct path (try adding file with extension)")
 
     elif firstInput == 2:
-        print("decoding:")
+        print("decoding..")
+        video_file = input("Enter the path of video: ")
+        frame_folder = input("Choose frame Output folder: ")
+        output_file = input("Enter output file name (with extension): ")
+        frame_width = input("Enter the frame width (default - 128)") or 128
+        frame_height = input("Enter the frame height (default - 128)") or 128
+
+        frameExtraction(video_file,frame_folder)
+        bits = ReadingBits(frame_folder, frame_width, frame_height)
+        bits_to_file(bits,output_file)
+
+        print("Decoding Done.")
+
+
     else:
         print("Wrong input exiting.")
 
